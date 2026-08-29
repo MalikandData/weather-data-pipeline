@@ -1,7 +1,10 @@
+import csv
 import json
+import logging
 import os
 from datetime import datetime
-import csv
+
+from logging_config import setup_logging
 
 
 def get_latest_bronze_file(bronze_folder="data/bronze"):
@@ -65,13 +68,19 @@ def save_to_silver(rows, silver_folder="data/silver"):
         writer.writeheader()
         writer.writerows(rows)
 
+    logging.info(f"Cleaned data saved to {filepath}")
     print(f"[OK] Cleaned data saved to {filepath}")
 
 
 def main():
+    setup_logging()
+
+    logging.info("Starting weather data transformation")
+
     print("Loading latest bronze file...")
 
     bronze_path = get_latest_bronze_file()
+    logging.info(f"Using bronze file: {bronze_path}")
     print(f"Using bronze file: {bronze_path}")
 
     raw_json = load_bronze_json(bronze_path)
@@ -80,12 +89,14 @@ def main():
 
     rows = clean_weather(raw_json, city_name="Copenhagen")
 
+    logging.info(f"Transformed {len(rows)} weather records")
     print(f"Total rows: {len(rows)}")
 
     print("Saving to silver layer as CSV...")
 
     save_to_silver(rows)
 
+    logging.info("Weather data transformation completed")
     print("Silver layer updated successfully.")
 
 
